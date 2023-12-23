@@ -13,6 +13,8 @@ const imagemin = require("gulp-imagemin");
 const htmlmin = require('gulp-htmlmin');
 const size = require('gulp-size');
 const sourcemaps = require("gulp-sourcemaps");
+const newer = require("gulp-newer");
+const browserSync = require("browser-sync").create();
 // const autoprefixer = require("gulp-autoprefixer");
 const del = require("del");
 
@@ -30,14 +32,14 @@ const paths = {
     dest: 'dist/js/'
   },
   images: {
-    src: 'src/img/*',
+    src: 'src/img/**',
     dest: 'dist/images'
   }
 
 }
 
 function clean() {
-  return del(['dist'])
+  return del(['dist/*', '!dist/images'])
 }
 
 function html() {
@@ -46,7 +48,8 @@ function html() {
     .pipe(size({
       showFiles: true,
     }))
-    .pipe(gulp.dest(paths.html.dest));
+    .pipe(gulp.dest(paths.html.dest))
+    .pipe(browserSync.stream())
 }
 
 function styles(){
@@ -68,6 +71,7 @@ function styles(){
     showFiles: true,
   }))
   .pipe(gulp.dest(paths.styles.dest))
+  .pipe(browserSync.stream())
 }
 
 function scripts() {
@@ -83,10 +87,12 @@ function scripts() {
     showFiles: true,
   }))
   .pipe(gulp.dest(paths.scripts.dest))
+  .pipe(browserSync.stream())
 }
 
 function img() {
   return gulp.src(paths.images.src)
+  .pipe(newer(paths.images.dest))
   .pipe(imagemin({
     progressive: true,
   }))
@@ -97,8 +103,16 @@ function img() {
 }
 
 function watch() {
+  browserSync.init({
+    server: {
+      baseDir: './dist/'
+    }
+  })
+  gulp.watch(paths.html.dest).on('change', browserSync.reload)
+  gulp.watch(paths.html.src, html)
   gulp.watch(paths.styles.src, styles)
   gulp.watch(paths.scripts.src, scripts)
+  gulp.watch(paths.images.src, img)
 }
 
 const build = gulp.series(clean, html, gulp.parallel(styles, scripts, img), watch)
