@@ -12,6 +12,8 @@ const concat = require("gulp-concat");
 const imagemin = require("gulp-imagemin");
 const htmlmin = require('gulp-htmlmin');
 const size = require('gulp-size');
+const stylus = require('gulp-stylus');
+const gulppug = require('gulp-pug');
 const sourcemaps = require("gulp-sourcemaps");
 const newer = require("gulp-newer");
 const browserSync = require("browser-sync").create();
@@ -19,12 +21,16 @@ const browserSync = require("browser-sync").create();
 const del = require("del");
 
 const paths = {
+  pug:{
+    src: 'src/*.pug',
+    dest: 'dist/'
+  },
   html:{
     src: 'src/*.html',
-    dest: 'dist'
+    dest: 'dist/'
   },
   styles: {
-    src: 'src/styles/**/*.less',
+    src: ['src/styles/**/*.styl', 'src/styles/**/*.less'],
     dest: 'dist/css/'
   }, 
   scripts: {
@@ -42,6 +48,15 @@ function clean() {
   return del(['dist/*', '!dist/images'])
 }
 
+function pug() {
+  return gulp.src(paths.pug.src)
+    .pipe(gulppug({}))
+    .pipe(size({
+      showFiles: true,
+    }))
+    .pipe(gulp.dest(paths.pug.dest))
+    .pipe(browserSync.stream())
+}
 function html() {
   return gulp.src(paths.html.src)
     .pipe(htmlmin({ collapseWhitespace: true }))
@@ -55,7 +70,8 @@ function html() {
 function styles(){
   return gulp.src(paths.styles.src)
   .pipe(sourcemaps.init())
-  .pipe(less())
+  // .pipe(less())
+  .pipe(stylus())
   // .pipe(autoprefixer({
   //   cascade: false
   // }))
@@ -120,6 +136,7 @@ const build = gulp.series(clean, html, gulp.parallel(styles, scripts, img), watc
 exports.clean = clean
 exports.img = img
 exports.html = html
+exports.pug = pug
 exports.styles = styles
 exports.scripts = scripts
 exports.watch = watch
