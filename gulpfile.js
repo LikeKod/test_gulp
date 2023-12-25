@@ -9,11 +9,13 @@ const cleanCSS = require("gulp-clean-css");
 const babel = require("gulp-babel");
 const uglify = require("gulp-uglify");
 const concat = require("gulp-concat");
+const ts = require("gulp-typescript");
 const imagemin = require("gulp-imagemin");
 const htmlmin = require('gulp-htmlmin');
 const size = require('gulp-size');
 const stylus = require('gulp-stylus');
 const gulppug = require('gulp-pug');
+const sass = require('gulp-sass')(require('sass'));
 const sourcemaps = require("gulp-sourcemaps");
 const newer = require("gulp-newer");
 const browserSync = require("browser-sync").create();
@@ -30,11 +32,11 @@ const paths = {
     dest: 'dist/'
   },
   styles: {
-    src: ['src/styles/**/*.styl', 'src/styles/**/*.less'],
+    src: ['src/styles/**/*.sass', 'src/styles/**/*.scss', 'src/styles/**/*.styl', 'src/styles/**/*.less'],
     dest: 'dist/css/'
   }, 
   scripts: {
-    src: 'src/scripts/**/*.js',
+    src: ['src/scripts/**/*.js', 'src/scripts/**/*.ts'],
     dest: 'dist/js/'
   },
   images: {
@@ -71,7 +73,8 @@ function styles(){
   return gulp.src(paths.styles.src)
   .pipe(sourcemaps.init())
   // .pipe(less())
-  .pipe(stylus())
+  // .pipe(stylus())
+  .pipe(sass().on('error', sass.logError))
   // .pipe(autoprefixer({
   //   cascade: false
   // }))
@@ -93,6 +96,10 @@ function styles(){
 function scripts() {
   return gulp.src(paths.scripts.src)
   .pipe(sourcemaps.init())
+  .pipe(ts({
+    noImplicitAny: true,
+    outFile: 'main.min.js'
+  }))
   .pipe(babel({
     presets: ['@babel/env']
   }))
