@@ -10,6 +10,7 @@ const babel = require("gulp-babel");
 const uglify = require("gulp-uglify");
 const concat = require("gulp-concat");
 const ts = require("gulp-typescript");
+const coffee = require("gulp-coffee");
 const imagemin = require("gulp-imagemin");
 const htmlmin = require('gulp-htmlmin');
 const size = require('gulp-size');
@@ -36,7 +37,7 @@ const paths = {
     dest: 'dist/css/'
   }, 
   scripts: {
-    src: ['src/scripts/**/*.js', 'src/scripts/**/*.ts'],
+    src: ['src/scripts/**/*.js', 'src/scripts/**/*.ts', 'src/scripts/**/*.coffee'],
     dest: 'dist/js/'
   },
   images: {
@@ -96,10 +97,11 @@ function styles(){
 function scripts() {
   return gulp.src(paths.scripts.src)
   .pipe(sourcemaps.init())
-  .pipe(ts({
-    noImplicitAny: true,
-    outFile: 'main.min.js'
-  }))
+  .pipe(coffee({bare: true}))
+  // .pipe(ts({
+  //   noImplicitAny: true,
+  //   outFile: 'main.min.js'
+  // }))
   .pipe(babel({
     presets: ['@babel/env']
   }))
